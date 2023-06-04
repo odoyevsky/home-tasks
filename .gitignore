@@ -2,6 +2,9 @@
 *.iml
 
 */target/
-*/project/target/
 .bsp
 *.sbt
+/Task2/project/
+
+
+/Task4/venv/
