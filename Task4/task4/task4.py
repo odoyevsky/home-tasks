@@ -38,7 +38,25 @@ calls = spark.createDataFrame([
     Row(date='2022-01-17', call_id='NVID49DF', audio_file='rec_13434111.wav', oper_id=134),
 ])
 
-calls.show()
+stat_total = dates.join(calls, on="date", how="left") \
+    .groupBy(dates["date"]) \
+    .agg(F.count(calls["date"]).alias("count")) \
+    .withColumn("stat_date_time", F.date_trunc('second', F.current_timestamp()))
+
+stat_oper = stat_total.join(calls, on="date", how="inner") \
+    .groupBy("date", "oper_id") \
+    .agg(F.count("*").alias("count")) \
+    .withColumn("stat_date_time", F.date_trunc('second', F.current_timestamp()))
+
+# Для того, чтобы записать данные в БД, к примеру, через JDBC можно использовать write поле у dataFrame'а,
+# через option указывать конфиг подключения: url/usr/password/настройка записи.
+
 dates.show()
+calls.show()
+stat_oper.show(truncate=False)
+stat_total.show(truncate=False)
+
+# для очищения данных в таблице, в конце скрипта можно было бы выполнить spark.sql("truncate table dates")
+# если бы было подключение к настоящей БД
 
 spark.stop()
